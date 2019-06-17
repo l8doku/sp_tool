@@ -5,8 +5,8 @@ from functools import wraps
 from collections import OrderedDict
 import inspect
 
-from arff_helper import ArffHelper
-import util
+from .arff_helper import ArffHelper
+from . import util
 
 
 def write_arff_result(func):
@@ -46,13 +46,13 @@ def load_ARFF_as_arff_object(fname, eye_movement_type_attribute=None, eye_moveme
     # arff file implementation in the framework that produced the labels, or some other reason.
     # These values correspond to the ones used in our hand-labelling tool [1].
     load_ARFF_as_arff_object.EM_VALUE_MAPPING_DEFAULT = {
-        0: 'UNKNOWN',
-        1: 'FIX',
-        2: 'SACCADE',
-        3: 'SP',
-        4: 'NOISE',
-        10: 'PSO',
-        11: 'BLINK'
+        0: u'UNKNOWN',
+        1: u'FIX',
+        2: u'SACCADE',
+        3: u'SP',
+        4: u'NOISE',
+        10: u'PSO',
+        11: u'BLINK'
     }
 
     arff_obj = ArffHelper.load(open(fname))
@@ -61,7 +61,7 @@ def load_ARFF_as_arff_object(fname, eye_movement_type_attribute=None, eye_moveme
         'File {} must contain at least "time", "x" and "y" columns'.format(fname)
 
     if eye_movement_type_attribute is not None:
-        from recording_processor import EM_TYPE_ARFF_DATA_TYPE, EM_TYPE_ATTRIBUTE_NAME
+        from .recording_processor import EM_TYPE_ARFF_DATA_TYPE, EM_TYPE_ATTRIBUTE_NAME
         if eye_movement_type_attribute is True:
             eye_movement_type_attribute = EM_TYPE_ATTRIBUTE_NAME
 
@@ -91,7 +91,7 @@ def load_ARFF_as_arff_object(fname, eye_movement_type_attribute=None, eye_moveme
 
         assert isinstance(eye_movement_type_mapping_dict, dict), 'Argument @eye_movement_type_mapping_dict must be ' \
                                                                  'either a dict, or None, or a string "default"'
-        assert all([v in EM_TYPE_ARFF_DATA_TYPE for v in eye_movement_type_mapping_dict.values()]), \
+        assert all([v in EM_TYPE_ARFF_DATA_TYPE for v in list(eye_movement_type_mapping_dict.values())]), \
             'All the values of the provided dictionary must be one of the following: {}'.format(EM_TYPE_ARFF_DATA_TYPE)
         # now map using the dictionary
         original_values = arff_obj['data'][eye_movement_type_attribute]
@@ -194,7 +194,7 @@ def load_DSF_coord_as_arff_object(fname, output_arff_fname=None):
                 # geometry <property_name_1> <value in meters> <property_name_2> <value in meters> ...
                 # So we deem every second field as property name or value in meters, respectively.
                 # We convert the values to mm.
-                for i in xrange(1, len(words), 2):
+                for i in range(1, len(words), 2):
                     key_mm = '{}_mm'.format(words[i])
                     value_mm = float(words[i + 1]) * 1e3
                     arff_obj['metadata'][key_mm] = value_mm

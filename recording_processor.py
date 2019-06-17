@@ -3,15 +3,15 @@
 import sys
 import warnings
 
-import data_loaders
-from saccade_detector import SaccadeDetector
-from blink_detector import BlinkDetector
-from fixation_detector import FixationDetector
-import util
+from . import data_loaders
+from .saccade_detector import SaccadeDetector
+from .blink_detector import BlinkDetector
+from .fixation_detector import FixationDetector
+from . import util
 
-EM_TYPE_ATTRIBUTE_NAME = 'EYE_MOVEMENT_TYPE'
-EM_TYPE_ARFF_DATA_TYPE = ['UNKNOWN', 'FIX', 'SACCADE', 'SP', 'NOISE', 'BLINK', 'NOISE_CLUSTER', 'PSO']
-EM_TYPE_DEFAULT_VALUE = 'UNKNOWN'
+EM_TYPE_ATTRIBUTE_NAME = u'EYE_MOVEMENT_TYPE'
+EM_TYPE_ARFF_DATA_TYPE = [u'UNKNOWN', u'FIX', u'SACCADE', u'SP', u'NOISE', u'BLINK', u'NOISE_CLUSTER', u'PSO']
+EM_TYPE_DEFAULT_VALUE = u'UNKNOWN'
 
 
 class RecordingProcessor:
@@ -111,7 +111,7 @@ class RecordingProcessor:
                                  'data to ARFF format with %@METADATA fields "width_px", "height_px", '
                                  '"width_mm", "height_mm" '
                                  'and "distance_mm". The attributes should include time, x and y columns.'.
-                                 format(', '.join(self._format_loaders.keys())))
+                                 format(', '.join(list(self._format_loaders.keys()))))
 
         gaze_points = self._format_loaders[data_format.upper()](fname, **additional_args)
         gaze_points['metadata']['filename'] = fname
@@ -190,7 +190,7 @@ class RecordingProcessor:
         res = []
         observer_id = 0
         if verbose:
-            print >> sys.stderr, 'Loading {} files:'.format(len(fnames))
+            print('Loading {} files:'.format(len(fnames)), file=sys.stderr)
         for i, fname in enumerate(fnames):
             gaze_points = self.load_recording(fname,
                                               data_format=data_format,
@@ -206,7 +206,7 @@ class RecordingProcessor:
             res.append(gaze_points)
             if verbose:
                 util.update_progress((i + 1, len(fnames)))
-        print >> sys.stderr
+        print(file=sys.stderr)
         if validate_ppd:
             RecordingProcessor.validate_ppd_of_multiple_recordings(res)
         return res
@@ -224,7 +224,7 @@ class RecordingProcessor:
 
         """
         ppds = []
-        for i in xrange(len(gaze_points_list)):
+        for i in range(len(gaze_points_list)):
             one_value = util.calculate_ppd(gaze_points_list[i])
             ppds.append(round(one_value, 2))  # round to 2 decimals to avoid machine precision issues
         if len(ppds) == 0:

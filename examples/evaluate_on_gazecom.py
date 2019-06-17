@@ -100,7 +100,7 @@ def evaluate_prepared_output(in_folder, movies=None,
 
     # evaluate for these eye movements (corresponds the possible EYE_MOVEMENT_TYPE labels)
     if only_main_eye_movements:
-        em_labels = ['SP', 'FIX', 'SACCADE']
+        em_labels = [u'SP', u'FIX', u'SACCADE']
     else:
         # if we are dealing with categorical attributes, find all labels that are used in the ground truth
         if len(ground_truth_objects) > 0 and \
@@ -108,9 +108,9 @@ def evaluate_prepared_output(in_folder, movies=None,
             all_em_labels = [set(obj['data'][hand_labelling_expert]) for obj in ground_truth_objects]
         else:
             # if the ground truth labels are not given as strings, take the values they can typically assume
-            all_em_labels = [[x for x in evaluate.CORRESPONDENCE_TO_HAND_LABELLING_VALUES.keys() if x != 'UNKNOWN']]
+            all_em_labels = [[x for x in list(evaluate.CORRESPONDENCE_TO_HAND_LABELLING_VALUES.keys()) if x != 'UNKNOWN']]
         em_labels = set().union(*all_em_labels)
-    print >> sys.stderr, 'Will evaluate the following labels:', sorted(em_labels)
+    print('Will evaluate the following labels:', sorted(em_labels), file=sys.stderr)
 
     # verify that the label sets intersect at all
     all_assigned_labels = [set(obj['data']['EYE_MOVEMENT_TYPE']) for obj in assigned_labels_objects]
@@ -121,9 +121,9 @@ def evaluate_prepared_output(in_folder, movies=None,
                       'and algorithmically assigned labels ({})!'.format(sorted(em_labels),
                                                                          sorted(all_assigned_labels)))
     elif len(label_intersection) != len(em_labels):
-        print >> sys.stderr, 'Intersection between evaluated ground truth labels and the algorithmically ' \
+        print('Intersection between evaluated ground truth labels and the algorithmically ' \
                              'assigned labels is not fully covering the set of evaluated labels: ' \
-                             '{} vs {}'.format(sorted(label_intersection), sorted(em_labels))
+                             '{} vs {}'.format(sorted(label_intersection), sorted(em_labels)), file=sys.stderr)
 
     res_stats = {}
 
@@ -206,7 +206,7 @@ if __name__ == '__main__':
                                      ignore_gazecom_folder_structure=args.all_files,
                                      only_main_eye_movements=not args.all_eye_movements)
     if args.one_line_output:
-        print stats
+        print(stats)
     else:
         import json
-        print json.dumps(stats, sort_keys=True, separators=[',', ': '], indent=4)
+        print(json.dumps(stats, sort_keys=True, separators=[',', ': '], indent=4))

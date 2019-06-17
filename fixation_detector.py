@@ -3,8 +3,8 @@ import math
 
 import numpy as np
 
-import util
-from arff_helper import ArffHelper
+from . import util
+from .arff_helper import ArffHelper
 
 
 class FixationDetector(object):
@@ -103,7 +103,7 @@ class FixationDetector(object):
         # record intersaccadic interval indices of those intervals that are not labelled as FIX by the prefiltering
         unknown_interval_index = []
         unknown_interval_masks = []
-        for i in xrange(max(gaze_points['data']['INTERSACC_INTERVAL_INDEX']) + 1):
+        for i in range(max(gaze_points['data']['INTERSACC_INTERVAL_INDEX']) + 1):
             mask = gaze_points['data']['INTERSACC_INTERVAL_INDEX'] == i
             intersacc_interval = gaze_points['data'][mask]
             if len(intersacc_interval) == 0:

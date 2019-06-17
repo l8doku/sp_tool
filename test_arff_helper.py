@@ -5,7 +5,7 @@ import unittest
 import os
 import numpy as np
 import arff
-from arff_helper import ArffHelper
+from .arff_helper import ArffHelper
 
 
 class ArffHelperTest(unittest.TestCase):
@@ -52,7 +52,7 @@ class ArffHelperTest(unittest.TestCase):
 
     def test_add_column(self):
         name = 'EM_type'
-        dtype = ['UNKNOWN', 'FIX', 'SACCADE', 'SP', 'NOISE']
+        dtype = [u'UNKNOWN', u'FIX', u'SACCADE', u'SP', u'NOISE']
         a = ArffHelper.load(open('test_data/arff_data_example.arff'))
         b = ArffHelper.add_column(a, name, dtype, 'UNKNOWN')
         a['attributes'].append((name, dtype))

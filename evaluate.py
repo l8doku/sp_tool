@@ -14,11 +14,11 @@ Event = namedtuple('Event', ['type', 'start', 'end', 'duration'])
 # present). Each hand-labelling expert column contains numerical data with the following correspondence to eye movement
 # types:
 CORRESPONDENCE_TO_HAND_LABELLING_VALUES = {
-    'UNKNOWN': 0,
-    'FIX': 1,
-    'SACCADE': 2,
-    'SP': 3,
-    'NOISE': 4
+    u'UNKNOWN': 0,
+    u'FIX': 1,
+    u'SACCADE': 2,
+    u'SP': 3,
+    u'NOISE': 4
 }
 
 
@@ -89,7 +89,7 @@ def get_majority_vote(obj, experts, exclude_values=None):
 
         majority_vote = []
         hand_labellings = obj['data'][experts].tolist()
-        for i in xrange(len(hand_labellings)):
+        for i in range(len(hand_labellings)):
             # max number of occurrences wins
             candidates_set = set(hand_labellings[i]).difference(exclude_values)
             if not candidates_set:
@@ -162,7 +162,7 @@ def extract_events(labels, type_mapping_dict=None):
         if type_mapping_dict is not None:
             if event_type in type_mapping_dict:
                 event_type = type_mapping_dict[event_type]
-            elif not isinstance(event_type, basestring):
+            elif not isinstance(event_type, str):
                 warnings.warn('A non-string label "{}" not found in the @type_maping_dict, keeping the label as-is.'.
                               format(event_type))
         events.append(Event(type=event_type, start=current_i, end=current_i + event_len, duration=event_len))
@@ -238,7 +238,7 @@ def evaluate_episodes_as_Zemblys_et_al(true_labels_list,
     total_events = {'true': 0, 'assigned': 0}
 
     # recover the proper names of the events from hand-labelled data with the default scheme
-    from data_loaders import load_ARFF_as_arff_object
+    from .data_loaders import load_ARFF_as_arff_object
     mapping_labels_to_names = load_ARFF_as_arff_object.EM_VALUE_MAPPING_DEFAULT
 
     for ground_truth, assigned_labels in zip(true_labels_list, assigned_labels_list):
@@ -327,8 +327,8 @@ def evaluate_episodes_as_Zemblys_et_al(true_labels_list,
     assert len(true_labels_events) == len(assigned_labels_events)
 
     if positive_label is not None:
-        true_labels_events = map(lambda x: x if x == positive_label else '_WRONG_LABEL', true_labels_events)
-        assigned_labels_events = map(lambda x: x if x == positive_label else '_WRONG_LABEL', assigned_labels_events)
+        true_labels_events = [x if x == positive_label else '_WRONG_LABEL' for x in true_labels_events]
+        assigned_labels_events = [x if x == positive_label else '_WRONG_LABEL' for x in assigned_labels_events]
 
     stats = {'kappa': cohen_kappa_score(true_labels_events, assigned_labels_events)}
     return stats
@@ -369,7 +369,7 @@ def evaluate_episodes_as_Hooge_et_al(true_labels_list,
     }
 
     # recover the proper names of the events from hand-labelled data with the default scheme
-    from data_loaders import load_ARFF_as_arff_object
+    from .data_loaders import load_ARFF_as_arff_object
     mapping_labels_to_names = load_ARFF_as_arff_object.EM_VALUE_MAPPING_DEFAULT
 
     for ground_truth, assigned_labels in zip(true_labels_list, assigned_labels_list):
@@ -383,8 +383,8 @@ def evaluate_episodes_as_Hooge_et_al(true_labels_list,
         assigned_events = extract_events(assigned_labels['data']['EYE_MOVEMENT_TYPE'])
 
         # only keep the relevant events
-        ground_truth_events = filter(lambda x: x.type == positive_label, ground_truth_events)
-        assigned_events = filter(lambda x: x.type == positive_label, assigned_events)
+        ground_truth_events = [x for x in ground_truth_events if x.type == positive_label]
+        assigned_events = [x for x in assigned_events if x.type == positive_label]
         raw_stats['Total detected events'] += len(assigned_events)
 
         assigned_event_i = 0
@@ -397,7 +397,7 @@ def evaluate_episodes_as_Hooge_et_al(true_labels_list,
                 assigned_event_i += 1
                 raw_stats['FP'] += 1  # we had to skip a detected event because it didn't match anything -> False Alarm
                 if verbose:
-                    print >> sys.stderr, 'Registered a False Alarm for', assigned_events[assigned_event_i - 1]
+                    print('Registered a False Alarm for', assigned_events[assigned_event_i - 1], file=sys.stderr)
 
             hit_event_i = None
             hit_iou = 0.0
@@ -417,26 +417,26 @@ def evaluate_episodes_as_Hooge_et_al(true_labels_list,
                     assigned_event_i += 1
                     raw_stats['TP'] += 1  # found a match -> Hit
                     if verbose:
-                        print >> sys.stderr, 'Registered a Hit for', ground_truth_event, 'and', assigned_events[assigned_event_i - 1]
+                        print('Registered a Hit for', ground_truth_event, 'and', assigned_events[assigned_event_i - 1], file=sys.stderr)
 
                     break
                 else:
                     assigned_event_i += 1
                     raw_stats['FP'] += 1  # we had to skip a detected event because it didn't match anything -> False Alarm
                     if verbose:
-                        print >> sys.stderr, 'Registered a False Alarm for', assigned_events[assigned_event_i - 1]
+                        print('Registered a False Alarm for', assigned_events[assigned_event_i - 1], file=sys.stderr)
 
             if hit_event_i is None:
                 raw_stats['FN'] += 1  # no match found -> Miss
                 if verbose:
-                    print >> sys.stderr, 'Registered a Miss for', ground_truth_event
+                    print('Registered a Miss for', ground_truth_event, file=sys.stderr)
             raw_stats['Total IoU'] += hit_iou  # 0 if no match was found
 
         # went through all the ground truth events, let's see whether any detected events remain (all False Alarms)
         if assigned_event_i < len(assigned_events):
             raw_stats['FP'] += len(assigned_events) - assigned_event_i
             if verbose:
-                print >> sys.stderr, 'Registered', len(assigned_events) - assigned_event_i, 'additional False Alarms'
+                print('Registered', len(assigned_events) - assigned_event_i, 'additional False Alarms', file=sys.stderr)
 
     if return_raw_stats:
         return raw_stats
@@ -476,7 +476,7 @@ def evaluate_episodes_as_Hoppe_et_al(true_labels_list, assigned_labels_list, exp
     # get all possible labels for the confusion matrix
     if len(true_labels_list) > 0 and true_labels_list[0]['data'][experts[0]].dtype.type is not np.string_:
         # dealing with non-categorical labels, use standard order of labels
-        labels = ['FIX', 'SACCADE', 'SP', 'NOISE']
+        labels = [u'FIX', u'SACCADE', u'SP', u'NOISE']
     else:
         labels = [set(obj['data']['EYE_MOVEMENT_TYPE']) for obj in assigned_labels_list]
         labels = list(set().union(*labels))
@@ -529,16 +529,16 @@ def evaluate_episodes_as_Hoppe_et_al(true_labels_list, assigned_labels_list, exp
             # Record confusion matrix row and the @raw_stats.
             # Ensure that the @current_label - 1 is in tha valid range
             # (otherwise, it is some extra label, like PSO, which we ignore).
-            if (isinstance(current_label, basestring) and current_label == positive_label) or \
+            if (isinstance(current_label, str) and current_label == positive_label) or \
                     (isinstance(current_label, int) and (0 <= current_label - 1 < len(labels))
                      and labels[current_label - 1] == positive_label):
                 raw_confusion_denominator += 1
                 if alg_majority_label in labels:
                     raw_confusion[alg_majority_label] += 1
                 elif alg_majority_label != 'UNKNOWN':
-                    print >> sys.stderr, 'Had to skip this label when computing the confusion matrix: ' \
+                    print('Had to skip this label when computing the confusion matrix: ' \
                                          '{}, while full label list contains {} (this should not happen!)'.\
-                        format(alg_majority_label, labels)
+                        format(alg_majority_label, labels), file=sys.stderr)
 
                 if alg_majority_label == positive_label:
                     # true: +, detected: +
